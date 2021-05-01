@@ -7,7 +7,8 @@
 //游戏模式
 enum GameModel{
     PVE,
-    PVP
+    PVP,
+    EVE     //测试用
 };
 
 //游戏状态
@@ -22,6 +23,13 @@ enum Player{
     WHITE
 };
 
+//难度
+enum Tier{
+    PSAT,
+    PRESENT,
+    FUTURE
+};
+
 //棋盘大小
 const int BoardSize = 15;
 
@@ -30,8 +38,8 @@ class Util
 public:
     Util();
 
-    std::vector<std::vector<int>> ChessStatus;  //棋盘状态
-    std::vector<std::vector<int>> BotRefer;      //bot参考权重
+    QMap<QPoint, int> ChessStatus;  //棋盘状态
+    QMap<QPoint, int> BotRefer;      //bot参考权重
 
     Player player;          //下棋人状态
     GameModel gameModel;    //游戏模式
@@ -42,8 +50,11 @@ public:
     void update(QPoint pos);        //落子后更新棋盘
     void turnHuman(QPoint pos);     //人类下棋
     void turnRobot(QPoint pos);     //bot下棋
+
     Player isWin(QPoint pos);       //判断胜利
 
+    bool warning();                 //检测四子
+    bool balanceBreaker();          //检测禁手
     bool isFull();                  //平局
 };
 
