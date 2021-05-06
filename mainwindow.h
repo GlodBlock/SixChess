@@ -20,13 +20,23 @@ public:
 protected:
     //画棋盘
     void paintEvent(QPaintEvent *event);
+    void mouseMoveEvent(QMouseEvent *event);
 
 private:
     //初始化
-    void init();
+    void initPVP();
+    void initPVE();
+    void initEVE();
+
+    //鼠标悬浮位置
+    int clickX, clickY;
+
+    Util *game; //游戏本体指针
+
 
 private slots:
 
+    void on_pushButton_clicked(bool checked);
 };
 
 #endif // MAINWINDOW_H

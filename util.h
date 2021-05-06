@@ -38,8 +38,8 @@ class Util
 public:
     Util();
 
-    QMap<QPoint, int> ChessStatus;  //棋盘状态
-    QMap<QPoint, int> BotRefer;      //bot参考权重
+    int ChessStatus[BoardSize+1][BoardSize+1];  //棋盘状态
+    int BotRefer[BoardSize+1][BoardSize+1];      //bot参考权重
 
     Player player;          //下棋人状态
     GameModel gameModel;    //游戏模式
