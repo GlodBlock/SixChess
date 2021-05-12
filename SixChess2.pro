@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2021-04-21T17:36:31
+# Project created by QtCreator 2021-05-12T21:33:47
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = SixChess
+TARGET = SixChess2
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -25,15 +25,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp \
+        widget.cpp \
     util.cpp
 
 HEADERS += \
-        mainwindow.h \
+        widget.h \
     util.h
 
 FORMS += \
-        mainwindow.ui
-
-RESOURCES += \
-
+        widget.ui

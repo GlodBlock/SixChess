@@ -1,21 +1,20 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef WIDGET_H
+#define WIDGET_H
 
-#include <QMainWindow>
+#include <QWidget>
 #include "util.h"
 
 namespace Ui {
-class MainWindow;
+class Widget;
 }
 
-class MainWindow : public QMainWindow
+class Widget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
-    Ui::MainWindow *ui;
+    explicit Widget(QWidget *parent = 0);
+    ~Widget();
 
 protected:
     //画棋盘
@@ -33,10 +32,11 @@ private:
 
     Util *game; //游戏本体指针
 
-
 private slots:
-
     void on_pushButton_clicked(bool checked);
+
+private:
+    Ui::Widget *ui;
 };
 
-#endif // MAINWINDOW_H
+#endif // WIDGET_H

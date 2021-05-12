@@ -1,19 +1,19 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "widget.h"
+#include "ui_widget.h"
 
 const int BoardMargin = 16;
 const int BlockSize = 32;
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+Widget::Widget(QWidget *parent) :
+    QWidget(parent),
+    ui(new Ui::Widget)
 {
     ui->setupUi(this);
     //固定窗口大小
-    setFixedSize(1044,687);
+    setFixedSize(1025,686);
     //建立游戏实例
     game = new Util;
     game->gameStatus = END;
@@ -21,26 +21,26 @@ MainWindow::MainWindow(QWidget *parent) :
     setMouseTracking(true);
 }
 
-MainWindow::~MainWindow()
+Widget::~Widget()
 {
     delete ui;
     //结束时释放内存
-    if (game)
-    {
-        delete game;
-    }
+    delete game;
 }
 
-void MainWindow::initPVP()
+void Widget::initPVP()
 {
     //PVP初始化
     game->gameModel = PVP;
     game->gameStatus = RUNNING;
     game->initGame(PVP);
+    clickX = -1;
+    clickY = -1;
     update();
 }
 
-void MainWindow::paintEvent(QPaintEvent *event)
+
+void Widget::paintEvent(QPaintEvent *event)
 {
     //开始绘制棋盘
     QPainter painter(this);
@@ -70,7 +70,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
     }
 }
 
-void MainWindow::mouseMoveEvent(QMouseEvent *event)
+void Widget::mouseMoveEvent(QMouseEvent *event)
 {
     //获取鼠标坐标
     int PosX = event->x();
@@ -100,7 +100,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
     update();
 }
 
-void MainWindow::on_pushButton_clicked(bool checked)
+void Widget::on_pushButton_clicked(bool checked)
 {
     //开始PVP模式
     if(game->gameStatus == END)
@@ -108,3 +108,4 @@ void MainWindow::on_pushButton_clicked(bool checked)
     else
         QMessageBox::StandardButton btnValue = QMessageBox::information(this, "WARN", "当前游戏未结束");
 }
+
