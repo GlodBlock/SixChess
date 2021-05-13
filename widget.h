@@ -20,12 +20,17 @@ protected:
     //画棋盘
     void paintEvent(QPaintEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
+    //落子
+    void mouseReleaseEvent(QMouseEvent *event);
 
 private:
     //初始化
     void initPVP();
     void initPVE();
     void initEVE();
+
+    //游戏进程
+    void GameOver(Player player);
 
     //鼠标悬浮位置
     int clickX, clickY;

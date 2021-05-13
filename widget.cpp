@@ -55,9 +55,25 @@ void Widget::paintEvent(QPaintEvent *event)
         painter.drawLine(BoardMargin, BoardMargin + BlockSize * i, BlockSize * ( BoardSize + 1 ) - BoardMargin, BoardMargin + BlockSize * i);
     }
 
-    //绘制预计落点
     QBrush brush;
     brush.setStyle(Qt::SolidPattern);
+
+    //绘制棋子
+    for(int i = 0; i <= 15; i++ )
+        for(int j = 0; j <= 15; j++){
+            if(game->ChessStatus[i][j] == 1){
+                brush.setColor(Qt::black);
+                painter.setBrush(brush);
+                painter.drawEllipse(BoardMargin + BlockSize * i - 15, BoardMargin + BlockSize * j - 15, 30, 30);
+            }
+            if(game->ChessStatus[i][j] == -1){
+                brush.setColor(Qt::white);
+                painter.setBrush(brush);
+                painter.drawEllipse(BoardMargin + BlockSize * i - 15, BoardMargin + BlockSize * j - 15, 30, 30);
+            }
+        }
+
+    //绘制预计落点
     if(clickX != -1 && clickY != -1 && game->gameStatus == RUNNING)
     {
         if(game->ChessStatus[clickX][clickY] != 0) return;
@@ -98,6 +114,33 @@ void Widget::mouseMoveEvent(QMouseEvent *event)
             }
     }
     update();
+}
+
+void Widget::mouseReleaseEvent(QMouseEvent *event){
+    //游戏未开始时拒绝响应
+    if(game->gameStatus == END) return;
+    //平局判定
+    if(game->isFull()) GameOver(FAKE);
+    //PVP模式
+    if(game->gameModel == PVP){
+        if(clickX != -1 && clickY != -1 && game->ChessStatus[clickX][clickY] == 0){
+             game->turnHuman(QPoint(clickX, clickY));
+             //获胜
+             if(game->isWin() != FAKE)
+                 GameOver(game->isWin());
+        }
+    }
+}
+
+void Widget::GameOver(Player player){
+    //游戏结束
+    if(player == WHITE)
+        QMessageBox::StandardButton btnValue = QMessageBox::information(this, "恭喜", "白方获胜!");
+    if(player == BLACK)
+        QMessageBox::StandardButton btnValue = QMessageBox::information(this, "恭喜", "黑方获胜!");
+    if(player == FAKE)
+        QMessageBox::StandardButton btnValue = QMessageBox::information(this, "", "平局");
+    game->gameStatus = END;
 }
 
 void Widget::on_pushButton_clicked(bool checked)

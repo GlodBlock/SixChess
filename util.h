@@ -20,7 +20,8 @@ enum GameStatus{
 //下棋方
 enum Player{
     BLACK,
-    WHITE
+    WHITE,
+    FAKE
 };
 
 //难度
@@ -51,7 +52,8 @@ public:
     void turnHuman(QPoint pos);     //人类下棋
     void turnRobot(QPoint pos);     //bot下棋
 
-    Player isWin(QPoint pos);       //判断胜利
+    Player isWin();       //判断胜利
+    bool _dfsConnect(int rx, int ry, int col, int dep, int type);  //dfs搜索
 
     bool warning();                 //检测四子
     bool balanceBreaker();          //检测禁手
