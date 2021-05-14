@@ -35,10 +35,15 @@ private:
     //鼠标悬浮位置
     int clickX, clickY;
 
+    //是否为人
+    bool isHuman;
+
     Util *game; //游戏本体指针
 
 private slots:
     void on_pushButton_clicked(bool checked);
+
+    void on_pushButton_2_clicked(bool checked);
 
 private:
     Ui::Widget *ui;

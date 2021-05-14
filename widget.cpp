@@ -39,6 +39,23 @@ void Widget::initPVP()
     update();
 }
 
+void Widget::initPVE()
+{
+    //PVE初始化
+    game->gameModel = PVE;
+    game->gameStatus = RUNNING;
+    game->initGame(PVE);
+    clickX = -1;
+    clickY = -1;
+    QMessageBox chosCol(QMessageBox::Information, tr(""), tr("选择颜色"));
+    QPushButton *button1= (chosCol.addButton(tr("黑色"), QMessageBox::AcceptRole));
+    QPushButton *button2= (chosCol.addButton(tr("白色"), QMessageBox::YesRole));
+    chosCol.exec();
+    if(chosCol.clickedButton() == button1) isHuman = true;
+    if(chosCol.clickedButton() == button2) isHuman = false;
+    update();
+}
+
 
 void Widget::paintEvent(QPaintEvent *event)
 {
@@ -54,6 +71,9 @@ void Widget::paintEvent(QPaintEvent *event)
         painter.drawLine(BoardMargin + BlockSize * i, BoardMargin, BoardMargin + BlockSize * i, BlockSize * ( BoardSize + 1 ) - BoardMargin);
         painter.drawLine(BoardMargin, BoardMargin + BlockSize * i, BlockSize * ( BoardSize + 1 ) - BoardMargin, BoardMargin + BlockSize * i);
     }
+
+    //游戏未开始时拒绝响应
+    if(game->gameStatus == END) return;
 
     QBrush brush;
     brush.setStyle(Qt::SolidPattern);
@@ -113,6 +133,15 @@ void Widget::mouseMoveEvent(QMouseEvent *event)
                 }
             }
     }
+
+    //bot下棋
+    if(game->gameModel == PVE && !isHuman){
+        game->turnRobot();
+        isHuman = true;
+        //获胜
+        if(game->isWin() != FAKE)
+            GameOver(game->isWin());
+    }
     update();
 }
 
@@ -125,6 +154,15 @@ void Widget::mouseReleaseEvent(QMouseEvent *event){
     if(game->gameModel == PVP){
         if(clickX != -1 && clickY != -1 && game->ChessStatus[clickX][clickY] == 0){
              game->turnHuman(QPoint(clickX, clickY));
+             //获胜
+             if(game->isWin() != FAKE)
+                 GameOver(game->isWin());
+        }
+    }
+    //PVE模式
+    if(game->gameModel == PVE){
+        if(clickX != -1 && clickY != -1 && game->ChessStatus[clickX][clickY] == 0){
+            if(isHuman) game->turnHuman(QPoint(clickX, clickY)), isHuman = false;
              //获胜
              if(game->isWin() != FAKE)
                  GameOver(game->isWin());
@@ -152,3 +190,12 @@ void Widget::on_pushButton_clicked(bool checked)
         QMessageBox::StandardButton btnValue = QMessageBox::information(this, "WARN", "当前游戏未结束");
 }
 
+
+void Widget::on_pushButton_2_clicked(bool checked)
+{
+    //开始PVE模式
+    if(game->gameStatus == END)
+        initPVE();
+    else
+        QMessageBox::StandardButton btnValue = QMessageBox::information(this, "WARN", "当前游戏未结束");
+}

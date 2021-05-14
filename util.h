@@ -47,13 +47,15 @@ public:
     GameStatus gameStatus;  //游戏状态
 
     void initGame(GameModel gm);    //初始化
-    void calWeight();               //bot计算权重
+    void calWeight(QPoint pos);     //bot计算权重
     void update(QPoint pos);        //落子后更新棋盘
     void turnHuman(QPoint pos);     //人类下棋
-    void turnRobot(QPoint pos);     //bot下棋
+    void turnRobot();     //bot下棋
 
     Player isWin();       //判断胜利
-    bool _dfsConnect(int rx, int ry, int col, int dep, int type);  //dfs搜索
+    bool _dfsConnect(int rx, int ry, int col, int dep, int type, QString des);  //dfs搜索
+
+    void PST();                     //机器人
 
     bool warning();                 //检测四子
     bool balanceBreaker();          //检测禁手
