@@ -2,6 +2,9 @@
 #define WIDGET_H
 
 #include <QWidget>
+#include <QTcpSocket>
+#include <QTcpServer>
+#include <Qhostinfo.h>
 #include "util.h"
 
 namespace Ui {
@@ -38,12 +41,25 @@ private:
     //是否为人
     bool isHuman;
 
+    bool isHost;
+
+    //统计黑白胜负次数
+    int blackWin;
+    int whiteWin;
+
     Util *game; //游戏本体指针
+
+    QTcpServer *tcpServer;
+    QTcpSocket *tcpSocket;
+    QString getLocalIP();
+    void onNewConnection();
 
 private slots:
     void on_pushButton_clicked(bool checked);
 
     void on_pushButton_2_clicked(bool checked);
+
+    void on_pushButton_4_clicked(bool checked);
 
 private:
     Ui::Widget *ui;

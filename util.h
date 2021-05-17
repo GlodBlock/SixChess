@@ -31,8 +31,22 @@ enum Tier{
     FUTURE
 };
 
+//方向
+enum Dirc{
+    LEFT_UP,
+    UP,
+    RIGHT_UP,
+    RIGHT,
+    RIGHT_DOWN,
+    DOWN,
+    LEFT_DOWN,
+    LEFT
+};
+
 //棋盘大小
-const int BoardSize = 15;
+const int BoardSize = 19;
+
+const int PORT = 4567;
 
 class Util
 {
@@ -55,9 +69,7 @@ public:
     Player isWin();       //判断胜利
     bool _dfsConnect(int rx, int ry, int col, int dep, int type, QString des);  //dfs搜索
 
-    void PST();                     //机器人
-
-    bool warning();                 //检测四子
+    bool warning(QPoint pos);       //检测五子
     bool balanceBreaker();          //检测禁手
     bool isFull();                  //平局
 };

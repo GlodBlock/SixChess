@@ -50,11 +50,7 @@ void Widget::initPVP()
     if(chosCol.clickedButton() == button1) isHost = true;
     if(chosCol.clickedButton() == button2) isHost = false;
     update();
-    if(isHost)
-        tcpServer->listen(QHostAddress::LocalHost, PORT);
-    else{
-
-    }
+    if(isHost) tcpServer->listen(QHostAddress::LocalHost, PORT);
 }
 
 void Widget::initPVE()

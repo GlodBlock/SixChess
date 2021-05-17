@@ -23,8 +23,8 @@ void Util::initGame(GameModel _gameModel)
         {
             ChessStatus[i][j] = 0;
         }
-    //PVE模式下，棋盘权重初始化
-    if (gameModel == PVE)
+    //PVE以及EVE模式下，棋盘权重初始化
+    if (gameModel == PVE || gameModel == EVE)
     {
         for (int i = 0; i <= BoardSize; i ++)
             for (int j = 0; j <= BoardSize; j++)
@@ -80,7 +80,10 @@ void Util::turnRobot()
     }
     QPoint pos = q.front();
     while(!q.empty()) q.pop();
-    update(pos);
+
+    //bot首步优化
+    if(Max == 0) update(QPoint(7,7));
+    else update(pos);
 }
 
 void Util::calWeight(QPoint pos)
@@ -126,6 +129,21 @@ void Util::calWeight(QPoint pos)
         if(_dfsConnect(x, y, opp, 4, k, "1110")) BotRefer[x][y] += 285;
         if(_dfsConnect(x, y, opp, 5, k, "11110")) BotRefer[x][y] += 385;
     }
+    int cnt1 = 0, cnt2 = 0;
+    for(int k = 0; k < 8; k++){
+        if(_dfsConnect(x, y, me, 4, k, "1110")) cnt1 ++;
+        if(_dfsConnect(x, y, me, 3, k, "110")) cnt2 ++;
+    }
+    if(cnt1 > 1 || (cnt1 > 0 && cnt2 > 0)) BotRefer[x][y] += 1<<20;
+    if(cnt2 > 1) BotRefer[x][y] += 700;
+    cnt1 = 0, cnt2 = 0;
+    for(int k = 0; k < 8; k++){
+        if(_dfsConnect(x, y, opp, 4, k, "1110")) cnt1 ++;
+        if(_dfsConnect(x, y, opp, 3, k, "110")) cnt2 ++;
+    }
+    if(cnt1 > 1 || (cnt1 > 0 && cnt2 > 0)) BotRefer[x][y] += 1<<22;
+    if(cnt2 > 1) BotRefer[x][y] += 780;
+    if(warning(QPoint(x, y))) BotRefer[x][y] = 1<<30;
 }
 
 bool Util::balanceBreaker()
@@ -153,18 +171,69 @@ bool Util::_dfsConnect(int rx, int ry, int col, int dep, int type, QString des){
     //通用搜索
     //‘1’代表相同棋子，‘0’代表空位
     if(dep == 0) return true;
+    if(!(rx >= 0 && rx <= BoardSize && ry >= 0 && ry <= BoardSize)) return false;
     if(!((col == ChessStatus[rx][ry] && des[dep - 1] == '1') || (ChessStatus[rx][ry] == 0 && des[dep - 1] == '0'))) return false;
     int x = rx + dx8[type];
     int y = ry + dy8[type];
-    if(x >= 0 && x <= BoardSize && y >= 0 && y <= BoardSize){
-        if(_dfsConnect(x, y, col, dep - 1, type, des)) return true;
-    }
+    if(_dfsConnect(x, y, col, dep - 1, type, des)) return true;
     return false;
 }
 
-bool Util::warning()
+bool Util::warning(QPoint pos)
 {
-    //to-do
+    //五子警告
+    int opp;
+    if(player == BLACK) opp = -1;
+    if(player == WHITE) opp = 1;
+    int x = pos.x();
+    int y = pos.y();
+    for(int k = 0; k < 8; k ++){
+        if(ChessStatus[x][y] == 0){
+            if(_dfsConnect(x, y, opp, 6, k, "111110")) return true;
+        }
+    }
+    if(ChessStatus[x][y] == 0){
+        if(_dfsConnect(x, y, opp, 3, UP, "110") && _dfsConnect(x, y, opp, 4, DOWN, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 3, DOWN, "110") && _dfsConnect(x, y, opp, 4, UP, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 3, LEFT, "110") && _dfsConnect(x, y, opp, 4, RIGHT, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 3, RIGHT, "110") && _dfsConnect(x, y, opp, 4, LEFT, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 3, LEFT_UP, "110") && _dfsConnect(x, y, opp, 4, RIGHT_DOWN, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 3, RIGHT_DOWN, "110") && _dfsConnect(x, y, opp, 4, LEFT_UP, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 3, RIGHT_UP, "110") && _dfsConnect(x, y, opp, 4, LEFT_DOWN, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 3, LEFT_DOWN, "110") && _dfsConnect(x, y, opp, 4, RIGHT_UP, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 4, UP, "1110") && _dfsConnect(x, y, opp, 4, DOWN, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 4, DOWN, "1110") && _dfsConnect(x, y, opp, 4, UP, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 4, LEFT, "1110") && _dfsConnect(x, y, opp, 4, RIGHT, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 4, RIGHT, "1110") && _dfsConnect(x, y, opp, 4, LEFT, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 4, LEFT_UP, "1110") && _dfsConnect(x, y, opp, 4, RIGHT_DOWN, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 4, RIGHT_DOWN, "1110") && _dfsConnect(x, y, opp, 4, LEFT_UP, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 4, RIGHT_UP, "1110") && _dfsConnect(x, y, opp, 4, LEFT_DOWN, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 4, LEFT_DOWN, "1110") && _dfsConnect(x, y, opp, 4, RIGHT_UP, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 5, UP, "11110") && _dfsConnect(x, y, opp, 2, DOWN, "10")) return true;
+        if(_dfsConnect(x, y, opp, 5, DOWN, "11110") && _dfsConnect(x, y, opp, 2, UP, "10")) return true;
+        if(_dfsConnect(x, y, opp, 5, LEFT, "11110") && _dfsConnect(x, y, opp, 2, RIGHT, "10")) return true;
+        if(_dfsConnect(x, y, opp, 5, RIGHT, "11110") && _dfsConnect(x, y, opp, 2, LEFT, "10")) return true;
+        if(_dfsConnect(x, y, opp, 5, LEFT_UP, "11110") && _dfsConnect(x, y, opp, 2, RIGHT_DOWN, "10")) return true;
+        if(_dfsConnect(x, y, opp, 5, RIGHT_DOWN, "11110") && _dfsConnect(x, y, opp, 2, LEFT_UP, "10")) return true;
+        if(_dfsConnect(x, y, opp, 5, RIGHT_UP, "11110") && _dfsConnect(x, y, opp, 2, LEFT_DOWN, "10")) return true;
+        if(_dfsConnect(x, y, opp, 5, LEFT_DOWN, "11110") && _dfsConnect(x, y, opp, 2, RIGHT_UP, "10")) return true;
+        if(_dfsConnect(x, y, opp, 5, UP, "11110") && _dfsConnect(x, y, opp, 3, DOWN, "110")) return true;
+        if(_dfsConnect(x, y, opp, 5, DOWN, "11110") && _dfsConnect(x, y, opp, 3, UP, "110")) return true;
+        if(_dfsConnect(x, y, opp, 5, LEFT, "11110") && _dfsConnect(x, y, opp, 3, RIGHT, "110")) return true;
+        if(_dfsConnect(x, y, opp, 5, RIGHT, "11110") && _dfsConnect(x, y, opp, 3, LEFT, "110")) return true;
+        if(_dfsConnect(x, y, opp, 5, LEFT_UP, "11110") && _dfsConnect(x, y, opp, 3, RIGHT_DOWN, "110")) return true;
+        if(_dfsConnect(x, y, opp, 5, RIGHT_DOWN, "11110") && _dfsConnect(x, y, opp, 3, LEFT_UP, "110")) return true;
+        if(_dfsConnect(x, y, opp, 5, RIGHT_UP, "11110") && _dfsConnect(x, y, opp, 3, LEFT_DOWN, "110")) return true;
+        if(_dfsConnect(x, y, opp, 5, LEFT_DOWN, "11110") && _dfsConnect(x, y, opp, 3, RIGHT_UP, "110")) return true;
+        if(_dfsConnect(x, y, opp, 5, UP, "11110") && _dfsConnect(x, y, opp, 4, DOWN, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 5, DOWN, "11110") && _dfsConnect(x, y, opp, 4, UP, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 5, LEFT, "11110") && _dfsConnect(x, y, opp, 4, RIGHT, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 5, RIGHT, "11110") && _dfsConnect(x, y, opp, 4, LEFT, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 5, LEFT_UP, "11110") && _dfsConnect(x, y, opp, 4, RIGHT_DOWN, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 5, RIGHT_DOWN, "11110") && _dfsConnect(x, y, opp, 4, LEFT_UP, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 5, RIGHT_UP, "11110") && _dfsConnect(x, y, opp, 4, LEFT_DOWN, "1110")) return true;
+        if(_dfsConnect(x, y, opp, 5, LEFT_DOWN, "11110") && _dfsConnect(x, y, opp, 4, RIGHT_UP, "1110")) return true;
+    }
     return false;
 }
 
