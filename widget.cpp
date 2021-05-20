@@ -22,10 +22,14 @@ Widget::Widget(QWidget *parent) :
     whiteWin = 0;
     //开启鼠标悬浮追踪
     setMouseTracking(true);
-
     QString localIP = getLocalIP();
-    this->setWindowTitle(this->windowTitle() + "--IP:" + localIP);
+    this->setWindowTitle("SixChess--IP:" + localIP);
     tcpServer = new QTcpServer(this);
+    tcpSocket = new QTcpSocket(this);
+    tcpClient = new QTcpSocket(this);
+    connect(tcpServer,SIGNAL(newConnection()),this,SLOT(onNewConnection()));
+    connect(tcpClient,SIGNAL(connected()),this,SLOT(onClientConnect()));
+    connect(tcpClient,SIGNAL(readyRead()),this,SLOT(getClientData()));
 }
 
 Widget::~Widget()
@@ -39,7 +43,6 @@ void Widget::initPVP()
 {
     //PVP初始化
     game->gameModel = PVP;
-    game->gameStatus = RUNNING;
     game->initGame(PVP);
     clickX = -1;
     clickY = -1;
@@ -49,12 +52,15 @@ void Widget::initPVP()
     chosCol.exec();
     if(chosCol.clickedButton() == button1) isHost = true;
     if(chosCol.clickedButton() == button2) isHost = false;
-    update();
-    if(isHost)
-        tcpServer->listen(QHostAddress::LocalHost, PORT);
-    else{
-
+    if(isHost){
+        tcpServer->listen(QHostAddress::LocalHost,PORT);
+        isHuman = true;
     }
+    else{
+        tcpClient->connectToHost(QHostAddress::LocalHost,PORT);
+        isHuman = false;
+    }
+    update();
 }
 
 void Widget::initPVE()
@@ -95,9 +101,6 @@ void Widget::paintEvent(QPaintEvent *event)
     brush.setStyle(Qt::SolidPattern);
 
     QFont font("宋体", 15, true);
-
-//    QPixmap pixmap;
-//    painter.drawPixmap(0,0,544,544,pixmap);
 
     for(int i = 0; i <= BoardSize; i ++)
     {
@@ -161,8 +164,34 @@ void Widget::paintEvent(QPaintEvent *event)
 
 void Widget::onNewConnection()
 {
-    if(game->gameStatus == RUNNING || !isHost) return;
+    QMessageBox::StandardButton btnValue = QMessageBox::information(this, "", "有人加入，可以开始游戏");
     tcpSocket = tcpServer->nextPendingConnection();
+    connect(tcpSocket,SIGNAL(readyRead()),this,SLOT(getData()));
+    game->gameStatus = RUNNING;
+}
+
+void Widget::onClientConnect()
+{
+    QMessageBox::StandardButton btnValue = QMessageBox::information(this, "", "成功匹配，可以开始游戏");
+    game->gameStatus = RUNNING;
+}
+
+void Widget::getData()
+{
+    isHuman = true;
+    char buff[10];
+    tcpSocket->read(buff,2);
+    game->turnHuman(QPoint(buff[0],buff[1]));
+    qDebug()<<(int)buff[0]<<" "<<(int)buff[1]<<"\n";
+}
+
+void Widget::getClientData()
+{
+    isHuman = true;
+    char buff[10];
+    tcpClient->read(buff,2);
+    game->turnHuman(QPoint(buff[0],buff[1]));
+    qDebug()<<(int)buff[0]<<" "<<(int)buff[1]<<"\n";
 }
 
 void Widget::mouseMoveEvent(QMouseEvent *event)
@@ -220,9 +249,15 @@ void Widget::mouseReleaseEvent(QMouseEvent *event){
     //平局判定
     if(game->isFull()) GameOver(FAKE);
     //PVP模式
-    if(game->gameModel == PVP){
+    if(game->gameModel == PVP && isHuman){
         if(clickX != -1 && clickY != -1 && game->ChessStatus[clickX][clickY] == 0){
              game->turnHuman(QPoint(clickX, clickY));
+             isHuman = false;
+             char str[2];
+             str[0] = clickX;
+             str[1] = clickY;
+             if(isHost) tcpSocket->write(str,2);
+             else tcpClient->write(str,2);
              //获胜
              if(game->isWin() != FAKE)
                  GameOver(game->isWin());

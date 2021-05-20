@@ -51,8 +51,8 @@ private:
 
     QTcpServer *tcpServer;
     QTcpSocket *tcpSocket;
+    QTcpSocket *tcpClient;
     QString getLocalIP();
-    void onNewConnection();
 
 private slots:
     void on_pushButton_clicked(bool checked);
@@ -60,6 +60,14 @@ private slots:
     void on_pushButton_2_clicked(bool checked);
 
     void on_pushButton_4_clicked(bool checked);
+
+    void onNewConnection();
+
+    void onClientConnect();
+
+    void getData();
+
+    void getClientData();
 
 private:
     Ui::Widget *ui;
