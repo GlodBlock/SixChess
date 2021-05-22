@@ -68,9 +68,10 @@ public:
 
     Player isWin();       //判断胜利
     bool _dfsConnect(int rx, int ry, int col, int dep, int type, QString des);  //dfs搜索
+    int antiDirc(int x);            //获取反向
 
     bool warning(QPoint pos);       //检测五子
-    bool balanceBreaker();          //检测禁手
+    bool balanceBreaker(QPoint pos);//检测禁手
     bool isFull();                  //平局
 };
 

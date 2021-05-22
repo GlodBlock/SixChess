@@ -312,7 +312,8 @@ bool Util::balanceBreaker(QPoint pos)
     for (int i = 0; i < 8 ;i ++)
         for (int j = 0; j < 8; j ++)
         {
-            if(i == j || antiDirc(i) == j) continue;
+            //避免同向
+            if(i == j) continue;
             //五五禁手
             if(_dfsConnect(x, y, 1, 5, i, "11110") && _dfsConnect(x, y, 1, 2, antiDirc(i), "00") && _dfsConnect(x, y, 1, 5, j, "11110") && _dfsConnect(x, y, 1, 2, antiDirc(j), "00")) return true;
             if(_dfsConnect(x, y, 1, 6, i, "011110") && _dfsConnect(x, y, 1, 6, j, "011110")) return true;

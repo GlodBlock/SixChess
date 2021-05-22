@@ -150,7 +150,7 @@ void Widget::paintEvent(QPaintEvent *event)
             }
 
     //绘制预计落点
-    if(clickX != -1 && clickY != -1 && game->gameStatus == RUNNING)
+    if(clickX != -1 && clickY != -1 && game->gameStatus == RUNNING && isHuman)
     {
         if(game->ChessStatus[clickX][clickY] != 0) return;
         if(game->player == BLACK)
@@ -181,8 +181,13 @@ void Widget::getData()
     isHuman = true;
     char buff[10];
     tcpSocket->read(buff,2);
+    if(game->balanceBreaker(QPoint(buff[0],buff[1]))) GameOver(WHITE);
     game->turnHuman(QPoint(buff[0],buff[1]));
-    qDebug()<<(int)buff[0]<<" "<<(int)buff[1]<<"\n";
+    if(game->isWin() != FAKE)
+        GameOver(game->isWin());
+    if(game->isFull())
+        GameOver(FAKE);
+
 }
 
 void Widget::getClientData()
@@ -190,8 +195,13 @@ void Widget::getClientData()
     isHuman = true;
     char buff[10];
     tcpClient->read(buff,2);
+    if(game->balanceBreaker(QPoint(buff[0],buff[1]))) GameOver(WHITE);
     game->turnHuman(QPoint(buff[0],buff[1]));
-    qDebug()<<(int)buff[0]<<" "<<(int)buff[1]<<"\n";
+    if(game->isWin() != FAKE)
+        GameOver(game->isWin());
+    if(game->isFull())
+        GameOver(FAKE);
+
 }
 
 void Widget::mouseMoveEvent(QMouseEvent *event)
@@ -224,8 +234,8 @@ void Widget::mouseMoveEvent(QMouseEvent *event)
 
     //bot下棋
     if(game->gameModel == PVE && !isHuman && game->gameStatus == RUNNING){
-        game->turnRobot();
         isHuman = true;
+        game->turnRobot();
         //获胜
         if(game->isWin() != FAKE)
             GameOver(game->isWin());
@@ -251,6 +261,7 @@ void Widget::mouseReleaseEvent(QMouseEvent *event){
     //PVP模式
     if(game->gameModel == PVP && isHuman){
         if(clickX != -1 && clickY != -1 && game->ChessStatus[clickX][clickY] == 0){
+             if(game->balanceBreaker(QPoint(clickX, clickY))) GameOver(WHITE);
              game->turnHuman(QPoint(clickX, clickY));
              isHuman = false;
              char str[2];
@@ -291,6 +302,8 @@ void Widget::GameOver(Player player){
     if(player == FAKE)
         QMessageBox::StandardButton btnValue = QMessageBox::information(this, "", "平局");
     game->gameStatus = END;
+    if(!isHost) tcpClient->disconnectFromHost();
+    else tcpServer->close();
 }
 
 QString Widget::getLocalIP()
